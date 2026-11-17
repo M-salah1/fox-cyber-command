@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+foxcc.db
+.foxcc_secret
+reports/*
+!.gitkeep

@@ -1,0 +1,4 @@
+# FOX CYBER COMMAND — core is Python standard library only.
+# No pip install is required to run the core.
+# External tools (nmap, nuclei, subfinder, ...) are optional and
+# are detected at runtime by `doctor`; see README.md.
