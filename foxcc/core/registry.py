@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Tool registry - ALL 36 tools, grouped into teams, honest status.
+"""Tool registry - ALL 45 tools, grouped into teams, honest status.
 
 termux_status: supported / partial / pc_only / info_only.
 pc_only tools NEVER run on the phone; each has a real built-in
@@ -358,6 +358,109 @@ TOOLS += [
      "fallback": "Termux + الأدوات المدمجة = البديل الآمن على أي هاتف"},
 ]
 
+TOOLS += [
+    {"id": "sliver", "name": "Sliver", "team": "lab",
+     "category": "Lab / C2 framework (lab only)",
+     "purpose_ar": "إطار تحكم وقيادة داخل مختبرك الخاص فقط (خادم مختبر)",
+     "termux_status": "pc_only", "linux_status": "supported",
+     "binary": "sliver-server",
+     "install_termux": "خادم Sliver حاسوب فقط — لا يعمل على الهاتف",
+     "install_linux": "Download Sliver releases from its GitHub repo — lab server only (127.0.0.0/8)",
+     "url": _u("github" + ".com", "/BishopFox/sliver"),
+     "fallback": "Built-in lab checklist — C2 testing needs a lab server you own"},
+    {"id": "trufflehog", "name": "TruffleHog", "team": "secrets",
+     "category": "Secrets / Credential scanning",
+     "purpose_ar": "البحث عن أسرار وبيانات اعتماد مسرّبة في الكود والمستودعات (قيم محجّبة فقط)",
+     "termux_status": "supported", "linux_status": "supported",
+     "binary": "trufflehog",
+     "install_termux": "pkg install golang && go install github.com/trufflesecurity/trufflehog/v3@latest",
+     "install_linux": "go install github.com/trufflesecurity/trufflehog/v3@latest",
+     "url": _u("github" + ".com", "/trufflesecurity/trufflehog"),
+     "fallback": "Built-in secret-pattern scan (values never shown, first4/last4 only)"},
+    {"id": "gitleaks", "name": "Gitleaks", "team": "secrets",
+     "category": "Secrets / Git history scanning",
+     "purpose_ar": "فحص سجل Git بحثاً عن أسرار مسرّبة في مستودعاتك أنت",
+     "termux_status": "supported", "linux_status": "supported",
+     "binary": "gitleaks",
+     "install_termux": "pkg install gitleaks || go install github.com/gitleaks/gitleaks/v8@latest",
+     "install_linux": "go install github.com/gitleaks/gitleaks/v8@latest",
+     "url": _u("github" + ".com", "/gitleaks/gitleaks"),
+     "fallback": "Built-in secret-pattern scan of local git history (values never shown)"},
+    {"id": "detect-secrets", "name": "detect-secrets", "team": "secrets",
+     "category": "Secrets / Baseline scanning",
+     "purpose_ar": "اكتشاف الأسرار في الكود وبناء خط أساس (baseline) لمستودعاتك",
+     "termux_status": "supported", "linux_status": "supported",
+     "binary": "detect-secrets",
+     "install_termux": "pip install detect-secrets",
+     "install_linux": "pip install detect-secrets",
+     "url": _u("github" + ".com", "/Yelp/detect-secrets"),
+     "fallback": "Built-in secret-pattern scan (values never shown, first4/last4 only)"},
+    {"id": "sherlock", "name": "Sherlock", "team": "osint",
+     "category": "OSINT / Username search",
+     "purpose_ar": "البحث عن اسم مستخدم عبر المواقع العامة (معلومات عامة فقط)",
+     "termux_status": "supported", "linux_status": "supported",
+     "binary": "sherlock",
+     "install_termux": "pip install sherlock-project",
+     "install_linux": "pip install sherlock-project",
+     "url": _u("github" + ".com", "/sherlock-project/sherlock"),
+     "fallback": "Built-in public-profile link check (no account access)"},
+    {"id": "maigret", "name": "Maigret", "team": "osint",
+     "category": "OSINT / Username & profile search",
+     "purpose_ar": "البحث المتقدم عن أسماء المستخدمين عبر مئات المواقع العامة",
+     "termux_status": "partial", "linux_status": "supported",
+     "binary": "maigret",
+     "install_termux": "pip install maigret  # ثقيل وبطيء على الهاتف",
+     "install_linux": "pip install maigret",
+     "url": _u("github" + ".com", "/soxoj/maigret"),
+     "fallback": "Built-in public-profile link check (no account access)"},
+    {"id": "ossec", "name": "OSSEC", "team": "blue",
+     "category": "Blue / Host intrusion detection",
+     "purpose_ar": "كشف التسلل على المضيف ومراقبة سلامة الملفات (خادم)",
+     "termux_status": "pc_only", "linux_status": "supported",
+     "binary": "ossec-control",
+     "install_termux": "خادم OSSEC لا يعمل على الهاتف — خادم/حاسوب فقط",
+     "install_linux": "Install OSSEC from its official site — server/PC only",
+     "url": _u("www.os" + "sec.net", "/"),
+     "fallback": "Built-in log analyser + file-integrity checklist (SHA-256)"},
+    {"id": "sleuthkit", "name": "The Sleuth Kit", "team": "blue",
+     "category": "Forensics / Disk investigation",
+     "purpose_ar": "تحليل صور الأقراص والتحقيق الجنائي الرقمي (صور تملكها)",
+     "termux_status": "partial", "linux_status": "supported",
+     "binary": "fls",
+     "install_termux": "pkg install sleuthkit  # أدوات CLI فقط على الهاتف",
+     "install_linux": "sudo apt install sleuthkit",
+     "url": _u("www.sleuth" + "kit.org", "/sleuthkit/"),
+     "fallback": "Built-in forensics: SHA-256, file type, strings, timeline"},
+    {"id": "hashdeep", "name": "hashdeep", "team": "blue",
+     "category": "Forensics / File integrity hashing",
+     "purpose_ar": "حساب بصمات الملفات والتحقق من سلامتها",
+     "termux_status": "supported", "linux_status": "supported",
+     "binary": "hashdeep",
+     "install_termux": "pkg install hashdeep",
+     "install_linux": "sudo apt install hashdeep",
+     "url": _u("github" + ".com", "/jadamcrain/hashdeep"),
+     "fallback": "Built-in SHA-256 file hasher (stdlib hashlib)"},
+]
+
+# Plugin / tool live status values. A status is INSTALLED only when a
+# real binary check (shutil.which / subprocess --version) found it;
+# a missing binary is NEVER reported as INSTALLED.
+PLUGIN_STATUS = frozenset([
+    "INSTALLED", "MISSING", "PARTIAL", "FAILED", "INCOMPATIBLE",
+    "PC_ONLY", "DISABLED",
+])
+
+
+class PluginStatus:
+    """Named constants for the PLUGIN_STATUS set above."""
+    INSTALLED = "INSTALLED"
+    MISSING = "MISSING"
+    PARTIAL = "PARTIAL"
+    FAILED = "FAILED"
+    INCOMPATIBLE = "INCOMPATIBLE"
+    PC_ONLY = "PC_ONLY"
+    DISABLED = "DISABLED"
+
 TEAMS = {
     "recon": "Recon Team — الاستطلاع",
     "network": "Network Security Team — الشبكات",
@@ -368,6 +471,8 @@ TEAMS = {
     "cloud": "Cloud & Code Team — السحابة والكود",
     "blue": "Blue Team — الدفاع والتحقيق",
     "os": "OS — أنظمة التشغيل (معلومات)",
+    "secrets": "Secret Hunter — صيد الأسرار",
+    "osint": "OSINT Team — الاستخبارات المفتوحة",
 }
 
 STATUS_AR = {

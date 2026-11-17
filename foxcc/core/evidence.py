@@ -55,6 +55,18 @@ def build_bundle(finding_id, engine, method, request="", response="",
     return bundle
 
 
+def redact_secret(value):
+    """Mask a secret: first 4 chars + ************** + last 4 chars.
+
+    Values of length <= 8 become "********". The full value is
+    never returned. (FOX CYBER COMMAND v2.00 — Secret Hunter.)
+    """
+    v = str(value or "")
+    if len(v) <= 8:
+        return "********"
+    return v[:4] + "**************" + v[-4:]
+
+
 def finding_key(name):
     """Stable dedup key for one finding type (lowercase, alnum words)."""
     text = (name or "").lower()

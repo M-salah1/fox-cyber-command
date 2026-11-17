@@ -2,5 +2,6 @@ __pycache__/
 *.pyc
 foxcc.db
 .foxcc_secret
+.foxcc_api_token
 reports/*
 !.gitkeep

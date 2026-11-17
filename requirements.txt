@@ -2,3 +2,5 @@
 # No pip install is required to run the core.
 # External tools (nmap, nuclei, subfinder, ...) are optional and
 # are detected at runtime by `doctor`; see README.md.
+# Optional (commented out — not needed for the core):
+# pydantic>=2.0  # only if a future integration wants typed models

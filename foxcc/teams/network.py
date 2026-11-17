@@ -9,6 +9,87 @@ explains that capture needs root / a PC.
 from ..core.adapters import run_binary
 from ..engines import dns, ports
 
+try:
+    from . import recon as _recon
+except Exception:  # pragma: no cover
+    _recon = None
+
+
+def topology(target, scopes):
+    """Network topology: target host + discovered subdomains/services.
+
+    Nodes: the target host plus every subdomain/service found by the
+    built-in engines (DNS / ports). Edges are labelled by the
+    evidence that produced them (dns / tcp_open / service_confirmed).
+    Scope required. No invented nodes: only observed evidence.
+    """
+    scopes.require(target)
+    host = dns.host_of(target)
+    dns_result = dns.resolve(host)
+    ip = dns_result["ips"][0] if dns_result["ips"] else host
+    nodes = [{"id": host, "kind": "host", "ip": ip,
+              "label": "%s (%s)" % (host, ip)}]
+    edges = []
+    subdomains = []
+    if _recon is not None:
+        try:
+            recon_out = _recon.run(target, scopes)
+            subs = (recon_out.get("details", {})
+                    .get("subfinder", {}).get("subdomains") or [])
+            subdomains = [s for s in subs if s and s != host]
+        except Exception:
+            subdomains = []
+    for sub in subdomains:
+        nodes.append({"id": sub, "kind": "subdomain", "ip": "",
+                      "label": sub})
+        edges.append({"from": host, "to": sub, "label": "dns",
+                      "evidence": "subfinder adapter output"})
+    p_result, _f, _row = ports.run(ip)
+    services = []
+    for entry in p_result.get("open", []):
+        port = entry.get("port")
+        state = entry.get("state")
+        service = entry.get("service")
+        node_id = "%s:%s" % (host, port)
+        nodes.append({"id": node_id, "kind": "service", "ip": ip,
+                      "port": port, "state": state, "service": service,
+                      "label": "%s:%s (%s)" % (host, port, state)})
+        edges.append({"from": host, "to": node_id, "label": state,
+                      "evidence": "ports engine: %s" % state})
+        services.append(entry)
+    return {"target": target, "host": host, "ip": ip,
+            "nodes": nodes, "edges": edges,
+            "details": {"resolved_ip": ip, "subdomains": subdomains,
+                        "services": services,
+                        "dns": dns_result, "ports": p_result}}
+
+
+def service_discovery(target, scopes):
+    """Service discovery: built-in ports engine + Nmap adapter when
+    present. Scope required. Returns {services, coverage_rows,
+    details, engines_ran} — two-tier states preserved."""
+    scopes.require(target)
+    host = dns.host_of(target)
+    dns_result = dns.resolve(host)
+    ip = dns_result["ips"][0] if dns_result["ips"] else host
+    p_result, p_findings, p_row = ports.run(ip)
+    services = list(p_result.get("open", []))
+    rows = [p_row]
+    details = {"resolved_ip": ip, "ports": p_result,
+               "services": services}
+    nmap = run_binary("nmap", ["-sV", "--top-ports", "20", ip],
+                      timeout=90)
+    details["nmap"] = {"status": nmap["status"],
+                       "note": nmap.get("note", ""),
+                       "output": nmap.get("output", "")[:2000]}
+    rows.append({"engine": "nmap", "status": nmap["status"],
+                 "note": (nmap.get("note") or nmap.get("output", ""))[:120]})
+    if nmap["status"] == "ok" and nmap.get("output"):
+        details["nmap_services"] = nmap["output"][:2000]
+    return {"services": services, "findings": p_findings,
+            "coverage_rows": rows, "details": details,
+            "engines_ran": ["ports", "nmap"]}
+
 
 def run(target, scopes):
     scopes.require(target)

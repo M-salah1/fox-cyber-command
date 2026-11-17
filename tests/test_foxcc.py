@@ -115,12 +115,13 @@ def _finding(name="Missing X-Frame-Options", severity="low",
 # --- registry ---------------------------------------------------------
 class TestRegistry(unittest.TestCase):
     def test_count_36(self):
-        self.assertEqual(len(TOOLS), 36)
+        self.assertEqual(len(TOOLS), 45)
 
     def test_all_teams_present(self):
         teams = {t["team"] for t in TOOLS}
         self.assertEqual(teams, {"recon", "network", "web", "password",
-                                 "lab", "mobile", "cloud", "blue", "os"})
+                                 "lab", "mobile", "cloud", "blue", "os",
+                                 "secrets", "osint"})
 
     def test_all_entries_have_required_fields(self):
         fields = ("id", "name", "team", "category", "purpose_ar",
@@ -148,7 +149,7 @@ class TestRegistry(unittest.TestCase):
 
     def test_counts_sum_36(self):
         counts = count_by_status()
-        self.assertEqual(sum(counts.values()), 36)
+        self.assertEqual(sum(counts.values()), 45)
         self.assertGreater(counts["pc_only"], 0)
         self.assertGreater(counts["supported"], 0)
 
@@ -157,7 +158,7 @@ class TestRegistry(unittest.TestCase):
 
     def test_tools_by_team(self):
         self.assertEqual(len(tools_by_team("recon")), 4)
-        self.assertEqual(len(tools_by_team("blue")), 6)
+        self.assertEqual(len(tools_by_team("blue")), 9)
         self.assertEqual(len(tools_by_team("os")), 3)
 
     def test_ids_unique(self):
@@ -328,8 +329,8 @@ class TestDoctorAdapters(unittest.TestCase):
         tmp = tempfile.mkdtemp()
         try:
             res = doctor_mod.run_doctor(tmp)
-            self.assertEqual(len(res["rows"]), 36)
-            self.assertEqual(sum(res["summary"].values()), 36)
+            self.assertEqual(len(res["rows"]), 45)
+            self.assertEqual(sum(res["summary"].values()), 45)
             self.assertTrue(res["python"]["ok"])
             self.assertIn("free_mb", res["storage"])
         finally:
@@ -614,7 +615,7 @@ class TestStoreReport(unittest.TestCase):
         self.assertIn("FOX CYBER COMMAND", html)
 
     def test_version(self):
-        self.assertEqual(__version__, "1.00")
+        self.assertEqual(__version__, "2.01")
 
 
 # --- mission smoke on local server -------------------------------------------

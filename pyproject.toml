@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fox-cyber-command"
+version = "2.01"
+description = "FOX CYBER COMMAND — defensive, authorized-only ethical-hacking command centre for Termux (stdlib-only core)"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Hafed Mehdi Salah Eddine", email = ""}]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+# Optional only — the core runs on the Python standard library alone.
+# pydantic is NOT required; listed here only if a future integration wants it.
+dev = []
+
+[project.scripts]
+foxcc = "foxcc:main"
+
+[tool.setuptools]
+packages = ["foxcc", "foxcc.core", "foxcc.engines", "foxcc.teams"]

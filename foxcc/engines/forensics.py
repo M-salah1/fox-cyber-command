@@ -19,6 +19,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 
 NAME = "forensics"
 
@@ -145,6 +146,91 @@ def pcap_summary(path):
                 "output": (proc.stdout or "")[:3000]}
     except Exception as exc:
         return {"tool": "tshark", "status": "failed", "note": str(exc)}
+
+
+def hash_file_sha256(path):
+    """SHA-256 of a file, read-only (never modifies the file)."""
+    digest = hashlib.sha256()
+    with open(path, "rb") as f:
+        while True:
+            chunk = f.read(65536)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def file_signature(path):
+    """Magic-bytes file type, read-only. Returns the type label."""
+    with open(path, "rb") as f:
+        head = f.read(4096)
+    return file_type(head)
+
+
+def file_metadata(path):
+    """Read-only metadata: size, mtime (UTC), mode, sha256."""
+    st = os.stat(path)
+    return {"path": path, "size": st.st_size,
+            "mtime": st.st_mtime,
+            "mtime_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ",
+                                       time.gmtime(st.st_mtime)),
+            "mode": oct(st.st_mode & 0o777),
+            "sha256": hash_file_sha256(path),
+            "type": file_signature(path)}
+
+
+def timeline_for_directory(path):
+    """Sorted mtime timeline for all files under a directory.
+
+    Read-only. Returns [{path, mtime_utc, size}] sorted by mtime.
+    """
+    entries = []
+    for root, dirs, files in os.walk(path):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        for name in files:
+            fpath = os.path.join(root, name)
+            try:
+                st = os.stat(fpath)
+            except Exception:
+                continue
+            entries.append({"path": fpath, "size": st.st_size,
+                            "mtime": st.st_mtime,
+                            "mtime_utc": time.strftime(
+                                "%Y-%m-%dT%H:%M:%SZ",
+                                time.gmtime(st.st_mtime))})
+    entries.sort(key=lambda e: e["mtime"])
+    return entries
+
+
+def verify_integrity(path, expected_sha256):
+    """True iff the file's current SHA-256 equals the expected one."""
+    if not expected_sha256:
+        return False
+    try:
+        return hash_file_sha256(path).lower() == str(
+            expected_sha256).strip().lower()
+    except Exception:
+        return False
+
+
+def chain_of_custody(entry):
+    """Chain-of-custody record for one evidence item.
+
+    entry: {path, handler, action?, note?}. The file is hashed
+    read-only; the record carries sha256 + timestamp + handler.
+    The evidence file itself is NEVER modified.
+    """
+    path = entry.get("path", "")
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    record = {"path": path, "handler": entry.get("handler", "unknown"),
+              "action": entry.get("action", "collected"),
+              "timestamp": now, "note": entry.get("note", ""),
+              "sha256": ""}
+    try:
+        record["sha256"] = hash_file_sha256(path)
+    except Exception as exc:
+        record["error"] = str(exc)
+    return record
 
 
 def run(path, rules_path=None):
